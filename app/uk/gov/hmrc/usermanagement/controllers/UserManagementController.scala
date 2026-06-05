@@ -22,7 +22,7 @@ import play.api.Logging
 import play.api.libs.json.*
 import play.api.libs.json.Json.toJson
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.play.bootstrap.http.ErrorResponse
 import uk.gov.hmrc.usermanagement.connectors.UmpConnector
@@ -239,7 +239,10 @@ class UserManagementController @Inject()(
   def addUserToGithubTeam: Action[AddUserToGithubTeamRequest] =
     Action.async(parse.json[AddUserToGithubTeamRequest](AddUserToGithubTeamRequest.reads)):
       implicit request =>
-        umpConnector.addUserToGithubTeam(request.body.username, request.body.team).map(_ => Ok)
+        umpConnector.addUserToGithubTeam(request.body.username, request.body.team).flatMap:
+          case Left(e) if e.statusCode == 400 => Future.successful(BadRequest)
+          case Left(e)                        => Future.failed(e)
+          case Right(_)                       => Future.successful(Ok)
 
   def removeUserFromTeam: Action[ManageTeamMembersRequest] =
     Action.async(parse.json[ManageTeamMembersRequest](ManageTeamMembersRequest.reads)):
