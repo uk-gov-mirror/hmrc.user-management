@@ -1381,6 +1381,30 @@ class UmpConnectorSpec
 
         res shouldBe ()
 
+    "it receives a 400 status code response" should :
+      "return Left containing UpstreamErrorResponse" in new Setup:
+        stubFor(
+          put(urlEqualTo("/v2/github/teams/PlatOps/members/tom.test"))
+            .willReturn(
+              aResponse()
+                .withStatus(400)
+            )
+        )
+
+        stubFor(
+          get(urlEqualTo("/internal-auth/ump/token"))
+            .willReturn(
+              aResponse()
+                .withStatus(200)
+                .withBody(JsString("token").toString)
+            )
+        )
+
+        val res: Either[UpstreamErrorResponse, Unit] =
+          userManagementConnector.addUserToGithubTeam("tom.test", "PlatOps").futureValue
+
+        res.left.map(_.statusCode) shouldBe Left(400)
+
   "addUserToTeam" when :
     "parsing a valid response" should :
       "return Unit" in new Setup:

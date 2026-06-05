@@ -131,7 +131,7 @@ class UmpConnector @Inject()(
           .execute[Either[UpstreamErrorResponse, Unit]]
           .flatMap:
             case Right(_) => Future.unit
-            case Left(e) => Future.failed(e)
+            case Left(e)  => Future.failed(e)
 
   def editTeamDetails(editTeamDetails: EditTeamDetails)(using HeaderCarrier): Future[Unit] =
     getUsersUmpToken()
@@ -143,7 +143,7 @@ class UmpConnector @Inject()(
           .execute[Either[UpstreamErrorResponse, Unit]]
           .flatMap:
             case Right(_) => Future.unit
-            case Left(e) => Future.failed(e)
+            case Left(e)  => Future.failed(e)
 
   def editTeamDetailsFromScheduler(editTeamDetails: EditTeamDetails)(using HeaderCarrier): Future[Unit] =
     getUserManagementUmpToken()
@@ -155,7 +155,7 @@ class UmpConnector @Inject()(
           .execute[Either[UpstreamErrorResponse, Unit]]
           .flatMap:
             case Right(_) => Future.unit
-            case Left(e) => Future.failed(e)          
+            case Left(e)  => Future.failed(e)
 
   def deleteTeam(teamName: String)(using HeaderCarrier): Future[Unit] =
     getUsersUmpToken()
@@ -166,7 +166,7 @@ class UmpConnector @Inject()(
           .execute[Either[UpstreamErrorResponse, Unit]]
           .flatMap:
             case Right(_) => Future.unit
-            case Left(e) => Future.failed(e)
+            case Left(e)  => Future.failed(e)
 
   def resetUserGooglePassword(resetGooglePassword: ResetGooglePassword)(using HeaderCarrier): Future[Unit] =
     getUsersUmpToken()
@@ -178,7 +178,7 @@ class UmpConnector @Inject()(
           .execute[Either[UpstreamErrorResponse, Unit]]
           .flatMap:
             case Right(_) => Future.unit
-            case Left(e) => Future.failed(e)
+            case Left(e)  => Future.failed(e)
 
   def editUserAccess(editUserAccessRequest: EditUserAccessRequest)(using HeaderCarrier): Future[Unit] =
     getUsersUmpToken()
@@ -190,7 +190,7 @@ class UmpConnector @Inject()(
           .execute[Either[UpstreamErrorResponse, Unit]]
           .flatMap:
             case Right(_) => Future.unit
-            case Left(e) => Future.failed(e)
+            case Left(e)  => Future.failed(e)
 
   def getUserAccess(username: String)(using HeaderCarrier): Future[Option[UserAccess]] =
     given Reads[UserAccess] = UserAccess.reads
@@ -272,7 +272,7 @@ class UmpConnector @Inject()(
           .execute[Either[UpstreamErrorResponse, Unit]]
           .flatMap:
             case Right(json) => Future.unit
-            case Left(e) => Future.failed(e)
+            case Left(e)     => Future.failed(e)
 
   def requestNewVpnCert(username: String)(using HeaderCarrier): Future[JsValue] =
     getUsersUmpToken()
@@ -285,16 +285,13 @@ class UmpConnector @Inject()(
             case Right(json) => Future.successful(json)
             case Left(e)     => Future.failed(e)
 
-  def addUserToGithubTeam(username: String, team: String)(using HeaderCarrier): Future[Unit] =
+  def addUserToGithubTeam(username: String, team: String)(using HeaderCarrier): Future[Either[UpstreamErrorResponse, Unit]] =
     getUsersUmpToken()
       .flatMap: token =>
         httpClientV2
           .put(url"$userManagementBaseUrl/v2/github/teams/$team/members/$username")
           .setHeader(token.asHeaders():_*)
           .execute[Either[UpstreamErrorResponse, Unit]]
-          .flatMap:
-            case Right(_) => Future.unit
-            case Left(e)  => Future.failed(e)
 
   def addUserToTeam(team: String, username: String)(using HeaderCarrier): Future[Unit] =
     getUsersUmpToken()
